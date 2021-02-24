@@ -1,6 +1,6 @@
 FROM ghcr.io/crowdstress/ubuntu-opencv:latest
 
-RUN apt install -y
+RUN apt install -y && \
     curl \
     git \
     clang \
