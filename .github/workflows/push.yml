@@ -23,7 +23,7 @@ jobs:
 
       - name: Build, tag and push docker image
         run: |
-          docker build -t ubuntu-opencv .
+          docker build -t ubuntu-opencv ubuntu
           docker tag ubuntu-opencv ghcr.io/crowdstress/ubuntu-opencv:latest
           docker push ghcr.io/crowdstress/ubuntu-opencv:latest
 
@@ -44,6 +44,6 @@ jobs:
 
       - name: Build, tag and push docker image
         run: |
-          docker build -t rust-opencv .
+          docker build -t rust-opencv rust
           docker tag rust-opencv ghcr.io/crowdstress/rust-opencv:latest
           docker push ghcr.io/crowdstress/rust-opencv:latest
