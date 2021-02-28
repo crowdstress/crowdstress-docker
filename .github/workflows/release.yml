@@ -13,37 +13,88 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Build ubuntu-rust
-        run: docker build -t ubuntu-rust ./ubuntu-rust
-
-      - name: Build ubuntu-opencv
-        run: docker build -t ubuntu-opencv ./ubuntu-opencv
-
-      - name: Build ubuntu-openssl
-        run: docker build -t ubuntu-openssl ./ubuntu-openssl
-
-      - name: Build ubuntu-rust-opencv
-        run: docker build -t ubuntu-rust-opencv ./ubuntu-rust-opencv
-
-      - name: Build ubuntu-rust-openssl
-        run: docker build -t ubuntu-rust-openssl ./ubuntu-rust-openssl
-
-      - name: Save images
-        run: |
-          docker save -o ubuntu-opencv.tar ubuntu-opencv:latest
-          docker save -o ubuntu-openssl.tar ubuntu-openssl:latest
-
-          docker save -o ubuntu-rust-opencv.tar ubuntu-rust-opencv:latest
-          docker save -o ubuntu-rust-openssl.tar ubuntu-rust-openssl:latest
-
-      - name: Upload compressed images
-        run: |
-          set -x
-          assets=()
-          for asset in ./*.tar do
-            assets+=("-a", "$asset")
-          done
-          tag_name="${GITHUB_REF##*/}"
-          hub release create "${assets[@]}" -m "Release $tag_name" "$tag_name"
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Build ubuntu-rust
+        run: |
+          docker build -t ubuntu-rust ./ubuntu-rust
+          docker save -o ubuntu-rust.tar ubuntu-rust:latest
+
+      - name: Upload ubuntu-rust
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ubuntu-rust.tar
+          asset_name: ubuntu-rust.tar
+          asset_content_type: application/x-tar
+
+      - name: Build ubuntu-opencv
+        run: |
+          docker build -t ubuntu-opencv ./ubuntu-opencv
+          docker save -o ubuntu-opencv.tar ubuntu-opencv:latest
+
+      - name: Upload ubuntu-opencv
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ubuntu-opencv.tar
+          asset_name: ubuntu-opencv.tar
+          asset_content_type: application/x-tar
+
+      - name: Build ubuntu-openssl
+        run: |
+          docker build -t ubuntu-openssl ./ubuntu-openssl
+          docker save -o ubuntu-openssl.tar ubuntu-openssl:latest
+
+      - name: Upload ubuntu-openssl
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ubuntu-openssl.tar
+          asset_name: ubuntu-openssl.tar
+          asset_content_type: application/x-tar
+
+      - name: Build ubuntu-rust-opencv
+        run: |
+          docker build -t ubuntu-rust-opencv ./ubuntu-rust-opencv
+          docker save -o ubuntu-rust-opencv.tar ubuntu-rust-opencv:latest
+
+      - name: Upload ubuntu-rust-opencv
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ubuntu-rust-opencv.tar
+          asset_name: ubuntu-rust-opencv.tar
+          asset_content_type: application/x-tar
+
+      - name: Build ubuntu-rust-openssl
+        run: |
+          docker build -t ubuntu-rust-openssl ./ubuntu-rust-openssl
+          docker save -o ubuntu-rust-openssl.tar ubuntu-rust-openssl:latest
+
+      - name: Upload ubuntu-rust-openssl
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ubuntu-rust-openssl.tar
+          asset_name: ubuntu-rust-openssl.tar
+          asset_content_type: application/x-tar
