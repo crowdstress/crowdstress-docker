@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build ubuntu-rust
+        run: docker build -t ubuntu-rust ./ubuntu-rust
+
+      - name: Build ubuntu-opencv
+        run: docker build -t ubuntu-opencv ./ubuntu-opencv
+
+      - name: Build ubuntu-openssl
+        run: docker build -t ubuntu-openssl ./ubuntu-openssl
+
+      - name: Build ubuntu-rust-opencv
+        run: docker build -t ubuntu-rust-opencv ./ubuntu-rust-opencv
+
+      - name: Build ubuntu-rust-openssl
+        run: docker build -t ubuntu-rust-openssl ./ubuntu-rust-openssl
+
+      - name: Save images
+        run: |
+          docker save -o ubuntu-opencv.tar ubuntu-opencv:latest
+          docker save -o ubuntu-openssl.tar ubuntu-openssl:latest
+
+          docker save -o ubuntu-rust-opencv.tar ubuntu-rust-opencv:latest
+          docker save -o ubuntu-rust-openssl.tar ubuntu-rust-openssl:latest
+
+      - name: Upload compressed images
+        run: |
+          set -x
+          assets=()
+          for asset in ./*.tar do
+            assets+=("-a", "$asset")
+          done
+          tag_name="${GITHUB_REF##*/}"
+          hub release create "${assets[@]}" -m "Release $tag_name" "$tag_name"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
